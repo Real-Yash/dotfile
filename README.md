@@ -10,7 +10,7 @@ Screenshots placeholder: add sanitized desktop and login-screen screenshots befo
 
 - Arch Linux on an already-installed system. This is not a disk installer.
 - A regular user account. `install.sh` refuses root.
-- Network access when AUR installation is confirmed. The installer prefers an existing `paru`, then `yay`; if neither is installed, it lists the required AUR packages and asks before bootstrapping `yay`.
+- Network access when AUR installation is confirmed. The installer prefers an existing `paru`, then `yay`; if neither is installed, it lists the required AUR packages and asks whether to bootstrap `yay` or `paru`.
 - Review the package lists in `packages/` before installation.
 
 ## Install
@@ -28,7 +28,7 @@ For the source machine's optional monitor layout and SDDM output mapping:
 ./install.sh --profile acer-nitro
 ```
 
-The installer asks separately before official packages, AUR packages, SDDM deployment, and enabling `NetworkManager`/`sddm`. If no AUR helper is available, it first asks whether to bootstrap `yay`; the AUR build runs as the normal user, never root. `sudo` is used only for pacman and system installation steps. It never removes packages, edits bootloader settings, changes kernel parameters, formats disks, or reboots.
+The installer asks separately before official packages, AUR packages, SDDM deployment, and enabling `NetworkManager`/`sddm`; confirmations default to Yes. If no AUR helper is available, it asks which single helper to bootstrap (`yay` by default, or `paru`); the AUR build runs as the normal user, never root. `sudo` is used only for pacman and system installation steps. It never removes packages, edits bootloader settings, changes kernel parameters, formats disks, or reboots.
 
 `--backup-dir PATH` selects a backup location. Default backups are timestamped under `~/.local/state/yash-rice/backups/`; each contains a manifest mapping every replaced target to its backup.
 

@@ -48,9 +48,9 @@ ask() {
     echo 'Cannot prompt for confirmation: /dev/tty is unavailable.' >&2
     return 1
   fi
-  printf '%s [y/N] ' "$prompt" > /dev/tty
+  printf '%s [Y/n] ' "$prompt" > /dev/tty
   IFS= read -r answer < /dev/tty || return 1
-  [[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]
+  [[ -z "$answer" || "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]
 }
 
 log "Preflight: profile=$profile target_home=$target_home target_root=$target_root"
@@ -106,4 +106,18 @@ fi
 echo '[7/7] Validation'
 log 'Validation.'
 "$repo_root/validate.sh"
-log 'Complete. No reboot was requested.'
+cat <<'EOF'
+Installation complete.
+
+Installed:
+✓ Hyprland
+✓ Waybar
+✓ Rofi
+✓ SwayNC
+✓ AGS
+✓ Hyprpaper
+✓ SDDM theme
+
+Next:
+Reboot to enter the rice.
+EOF

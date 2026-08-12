@@ -15,6 +15,11 @@ blueman
 udiskie
 polkit-kde-agent
 qt6ct
+qt6-5compat
+qt6-declarative
+qt6-multimedia
+qt6-svg
+qt6-virtualkeyboard
 grim
 slurp
 wl-clipboard

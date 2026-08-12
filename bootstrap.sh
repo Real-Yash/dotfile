@@ -19,12 +19,24 @@ if [[ ! -f /etc/arch-release ]]; then
     exit 1
 fi
 
+ask() {
+    local prompt="$1" answer
+
+    if [[ ! -r /dev/tty || ! -w /dev/tty ]]; then
+        echo "ERROR: Cannot prompt for confirmation: /dev/tty is unavailable." >&2
+        return 1
+    fi
+
+    printf '%s [Y/n] ' "$prompt" > /dev/tty
+    IFS= read -r answer < /dev/tty || return 1
+    [[ -z "$answer" || "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]
+}
+
 if ! command -v git >/dev/null 2>&1; then
     echo "Git is required."
     echo
-    read -r -p "Install git using pacman? [y/N] " answer
 
-    if [[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+    if ask "Install git using pacman?"; then
         sudo pacman -S --needed git
     else
         echo "Cannot continue without git."
@@ -40,9 +52,7 @@ echo "Install directory:"
 echo "  $INSTALL_DIR"
 echo
 
-read -r -p "Continue? [y/N] " answer
-
-if [[ ! "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+if ! ask "Continue?"; then
     echo "Cancelled."
     exit 0
 fi

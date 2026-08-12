@@ -7,17 +7,20 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mapfile -t packages < <(sed '/^[[:space:]]*#/d;/^[[:space:]]*$/d' "$repo_root/packages/aur.txt")
 (( ${#packages[@]} )) || exit 0
 
-ask_to_install_yay() {
+choose_helper_to_install() {
   local answer
 
   if [[ ! -r /dev/tty || ! -w /dev/tty ]]; then
-    echo 'Cannot prompt to bootstrap yay: /dev/tty is unavailable.' >&2
+    echo 'Cannot choose an AUR helper: /dev/tty is unavailable.' >&2
     return 1
   fi
 
-  printf 'No AUR helper found. Install yay? [y/N] ' > /dev/tty
+  printf 'No AUR helper found. Install yay or paru? [yay/paru] (default: yay) ' > /dev/tty
   IFS= read -r answer < /dev/tty || return 1
-  [[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]
+  case "${answer,,}" in
+    ''|yay|paru) printf '%s\n' "${answer,,}" ;;
+    *) return 1 ;;
+  esac
 }
 
 helper=""
@@ -34,12 +37,13 @@ if [[ -z "$helper" ]]; then
   echo 'Required AUR packages:'
   printf '  - %s\n' "${packages[@]}"
 
-  if ! ask_to_install_yay; then
-    echo 'AUR helper installation was declined; the rice installation is incomplete.' >&2
+  if ! helper="$(choose_helper_to_install)"; then
+    echo 'No AUR helper was selected; the rice installation is incomplete.' >&2
     exit 1
   fi
+  helper="${helper:-yay}"
 
-  echo 'Installing build dependencies for yay: base-devel git'
+  echo "Installing build dependencies for $helper: base-devel git"
   sudo pacman -S --needed base-devel git
 
   build_dir="$(mktemp -d)"
@@ -48,17 +52,16 @@ if [[ -z "$helper" ]]; then
   }
   trap cleanup EXIT
 
-  git clone https://aur.archlinux.org/yay.git "$build_dir/yay"
+  git clone "https://aur.archlinux.org/$helper.git" "$build_dir/$helper"
   (
-    cd "$build_dir/yay"
+    cd "$build_dir/$helper"
     makepkg -si --needed
   )
 
-  if ! command -v yay >/dev/null 2>&1; then
-    echo 'yay installation completed without making yay available on PATH; aborting.' >&2
+  if ! command -v "$helper" >/dev/null 2>&1; then
+    echo "$helper installation completed without making $helper available on PATH; aborting." >&2
     exit 1
   fi
-  helper=yay
 fi
 
 echo '[3/7] AUR packages'
