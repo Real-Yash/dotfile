@@ -42,9 +42,14 @@ done
 
 log() { printf '[yash-rice] %s\n' "$*"; }
 ask() {
-  local prompt="$1"
+  local prompt="$1" answer
   $yes && return 0
-  read -r -p "$prompt [y/N] " answer
+  if [[ ! -r /dev/tty || ! -w /dev/tty ]]; then
+    echo 'Cannot prompt for confirmation: /dev/tty is unavailable.' >&2
+    return 1
+  fi
+  printf '%s [y/N] ' "$prompt" > /dev/tty
+  IFS= read -r answer < /dev/tty || return 1
   [[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]
 }
 
@@ -66,18 +71,24 @@ mkdir -p "$backup_dir"
 printf 'type\toriginal\tbackup\tdeployed\n' > "$backup_dir/manifest.tsv"
 log "Backup manifest: $backup_dir/manifest.tsv"
 
+echo '[1/7] Official packages'
 if ! $skip_packages && ask 'Install required official Arch packages?'; then
   log 'Official package installation requires sudo and changes the system.'
   sudo "$repo_root/scripts/install-packages.sh"
 fi
 if ! $skip_packages && ask 'Install required AUR packages?'; then
-  log 'AUR package installation changes the system and requires an existing yay or paru helper.'
-  "$repo_root/scripts/install-aur.sh"
+  log 'AUR package installation changes the system; yay will be offered only if no supported helper is installed.'
+  if ! "$repo_root/scripts/install-aur.sh"; then
+    echo 'AUR package installation failed; aborting before dotfiles, SDDM, and service setup.' >&2
+    exit 1
+  fi
 fi
 
+echo '[4/7] Dotfiles'
 log 'Backing up conflicting user targets and deploying repository dotfiles.'
 TARGET_HOME="$target_home" BACKUP_DIR="$backup_dir" PROFILE="$profile" "$repo_root/scripts/deploy-dotfiles.sh"
 
+echo '[5/7] SDDM'
 if ! $skip_sddm && ask 'Install the SDDM theme and display policy? This changes /usr/share and /etc.'; then
   if [[ "$target_root" == / ]]; then
     log 'SDDM deployment requires sudo and does not restart or enable SDDM.'
@@ -86,11 +97,13 @@ if ! $skip_sddm && ask 'Install the SDDM theme and display policy? This changes 
   fi
   BACKUP_DIR="$backup_dir" PROFILE="$profile" TARGET_ROOT="$target_root" "$repo_root/scripts/setup-sddm.sh"
 fi
+echo '[6/7] Services'
 if ! $skip_services && ask 'Enable NetworkManager and sddm services? This changes service enablement.'; then
   log 'Service enablement requires sudo; no services will be restarted.'
   sudo "$repo_root/scripts/setup-services.sh"
 fi
 
+echo '[7/7] Validation'
 log 'Validation.'
 "$repo_root/validate.sh"
 log 'Complete. No reboot was requested.'
