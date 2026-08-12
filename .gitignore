@@ -1,0 +1,16 @@
+.env
+.env.*
+*.log
+*.cache
+*.lock
+*.bak
+*.old
+*.save
+*.pre-recovery-*
+.current_wallpaper
+.initial_startup_done
+.taskrc
+.task/
+node_modules/
+.DS_Store
+

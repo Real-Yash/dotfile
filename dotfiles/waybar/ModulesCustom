@@ -1,0 +1,18 @@
+{
+  "custom/power": {
+    "format": " ⏻ ",
+    "on-click": "wlogout --protocol layer-shell",
+    "tooltip": true,
+    "tooltip-format": "Power menu"
+  },
+  "custom/swaync": {
+    "format": "{} {icon}",
+    "return-type": "json",
+    "exec-if": "command -v swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  }
+}
+

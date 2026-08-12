@@ -1,0 +1,3 @@
+aylurs-gtk-shell-git
+wlogout
+

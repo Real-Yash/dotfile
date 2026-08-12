@@ -1,0 +1,12 @@
+#!/bin/sh
+# Acer Nitro SDDM X11 outputs observed on the source machine.
+set -eu
+internal=eDP
+external=HDMI-1-0
+
+if xrandr --query | grep -q "^${external} connected"; then
+  xrandr --output "$internal" --off --output "$external" --mode 1920x1080 --rate 180 --primary --pos 0x0
+else
+  xrandr --output "$external" --off --output "$internal" --mode 1920x1080 --rate 144 --primary --pos 0x0
+fi
+

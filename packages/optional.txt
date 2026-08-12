@@ -1,0 +1,8 @@
+ddcui
+nvtop
+btop
+cava
+pacman-contrib
+wallust
+matugen
+

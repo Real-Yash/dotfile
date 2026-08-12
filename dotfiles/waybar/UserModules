@@ -1,0 +1,10 @@
+{
+  "custom/tasks": {
+    "format": "󰄬 {}",
+    "exec": "task status:pending count",
+    "interval": 5,
+    "tooltip": false,
+    "on-click": "ags toggle TaskPopup"
+  }
+}
+

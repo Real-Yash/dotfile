@@ -1,0 +1,18 @@
+#!/bin/sh
+# Generic SDDM X11 display policy: prefer one connected external output.
+set -eu
+
+connected="$(xrandr --query | awk '/ connected/ {print $1}')"
+internal="$(printf '%s\n' "$connected" | awk '/^(eDP|LVDS)/ {print; exit}')"
+external="$(printf '%s\n' "$connected" | awk '!/^(eDP|LVDS)/ {print; exit}')"
+
+if [ -n "$external" ]; then
+  [ -z "$internal" ] || xrandr --output "$internal" --off
+  xrandr --output "$external" --auto --primary --pos 0x0
+elif [ -n "$internal" ]; then
+  xrandr --output "$internal" --auto --primary --pos 0x0
+else
+  first="$(printf '%s\n' "$connected" | awk 'NF {print; exit}')"
+  [ -z "$first" ] || xrandr --output "$first" --auto --primary --pos 0x0
+fi
+
